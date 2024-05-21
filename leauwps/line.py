@@ -21,15 +21,15 @@ class LineNotify:
         self.api_url = 'https://notify-api.line.me/api/notify'
         self.headers = {'Authorization': 'Bearer ' + access_token}
 
-    def send_message(self, message: str):
+    def send_message(self, message: str) -> None:
         payload = {
             'message': message,
         }
+        logger.info('Start to post LINE Notify.')
 
         try:
             res = requests.post(self.api_url, headers=self.headers, data=payload)
-            status_code = res.status_code
-            logger.info(f'StatusCode: {status_code}')
+            logger.info(f'StatusCode: {res.status_code}')
         except Exception as e:
             logger.critical(e)
         finally:

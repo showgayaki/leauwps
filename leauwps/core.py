@@ -28,7 +28,7 @@ def commands() -> list:
     ]
 
 
-def parse_output(command: str, output: str):
+def parse_output(command: str, output: str) -> str:
     for line in output.split('\n'):
         # 前後のスペースや改行などを削除
         line = line.strip()
@@ -36,12 +36,7 @@ def parse_output(command: str, output: str):
         # 各コマンドごとの処理
         if 'certbot certonly --standalone' in command:
             if 'Successfully received certificate.' in line:
-                result = '成功'
-            else:
-                result = '失敗'
-                continue
-
-            return f'Let\'s Enctryptの更新に{result}しました\n'
+                return 'Let\'s Enctryptの更新に成功しました\n'
         elif 'certbot certificates' in command:
             # line: Expiry Date: 2024-**-** **:**:**+00:00 (VALID: ** days)
             if 'Expiry Date: ' in line:
@@ -74,8 +69,12 @@ def main() -> None:
 
         for command in commands():
             status, output = ssm.run_command(command)
+            if 'Certificate not yet due for renewal' in output:
+                message += f'[{env.LETS_ENCRYPT_DOMAIN}]の証明書更新は\nまだ必要ありません'
+                break
+
             if status:
-                if output != '':
+                if output:
                     message += parse_output(command, output)
             else:
                 # statusが空のときは、コマンドの結果取得ができていない
