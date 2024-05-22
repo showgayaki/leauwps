@@ -17,6 +17,25 @@ logger = getLogger(__name__)
 env = Env()
 
 
+def check_valid_days(ssm: Ssm) -> int:
+    logger.info('Check valid days.')
+
+    command = 'certbot certificates'
+    valid_days = -1
+
+    status, output = ssm.run_command(command)
+    if status:
+        for line in output.split('\n'):
+            line = line.strip()
+            # Expiry Date: 2024-**-** **:**:**+00:00 (VALID: ** days)
+            if 'Expiry Date: ' in line:
+                valid_days = int(line.split(' ')[5])
+                logger.info(f'Valid [{valid_days}] days.')
+                break
+
+    return valid_days
+
+
 def commands() -> list:
     return [
         f'certbot certonly --standalone -d {env.LETS_ENCRYPT_DOMAIN} -m {env.LETS_ENCRYPT_MAIL} --agree-tos -n',
@@ -52,6 +71,17 @@ def parse_output(command: str, output: str) -> str:
 
 
 def main() -> None:
+    ssm = Ssm(env.EC2_INSTANCE_ID)
+
+    # 更新できるのは、30日以内に期限切れになる証明書のみ
+    THRESHOLD_DAYS_UPDATE_CERTIFICATE = 30
+    valid_days = check_valid_days(ssm)
+    if 0 < valid_days < THRESHOLD_DAYS_UPDATE_CERTIFICATE:
+        pass
+    else:
+        logger.info('Certificate not yet due for renewal.')
+        return
+
     security_group = SecurityGroup(
         env.AWS_DEFAULT_REGION,
         env.SECURITY_GROUP_ID,
@@ -69,10 +99,6 @@ def main() -> None:
 
         for command in commands():
             status, output = ssm.run_command(command)
-            if 'Certificate not yet due for renewal' in output:
-                message += f'[{env.LETS_ENCRYPT_DOMAIN}]の証明書更新は\nまだ必要ありません'
-                break
-
             if status:
                 if output:
                     message += parse_output(command, output)
