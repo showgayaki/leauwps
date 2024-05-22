@@ -31,6 +31,10 @@
       "aws": {
         "level": "DEBUG",
         "handlers": ["consoleHandler", "rotatingFileHandler"]
+      },
+      "line": {
+        "level": "DEBUG",
+        "handlers": ["consoleHandler", "rotatingFileHandler"]
       }
     },
     "root": {
