@@ -136,7 +136,7 @@ class Ssm:
                 )
 
                 if response['CommandInvocations'] == []:
-                    logger.info(f'Command results is not returned yet. Pause {WAITING_SECONDS} seconds...')
+                    logger.info(f'Command result is not returned yet. Pause {WAITING_SECONDS} seconds...')
                     time.sleep(WAITING_SECONDS)
                     continue
                 else:

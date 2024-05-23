@@ -45,7 +45,8 @@ WantedBy=multi-user.target
 Description=leauwps-timer
 
 [Timer]
-OnCalendar=*-*-* 00:00:00
+OnCalendar=weekly
+Persistent=true
 
 [Install]
 WantedBy=timers.target

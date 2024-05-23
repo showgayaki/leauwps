@@ -74,10 +74,10 @@ def main() -> None:
     ssm = Ssm(env.EC2_INSTANCE_ID)
 
     # 更新できるのは、30日以内に期限切れになる証明書のみ
-    THRESHOLD_DAYS_UPDATE_CERTIFICATE = 30
+    THRESHOLD_DAYS_RENEW_CERTIFICATE = 30
     valid_days = check_valid_days(ssm)
-    if 0 < valid_days < THRESHOLD_DAYS_UPDATE_CERTIFICATE:
-        pass
+    if 0 < valid_days < THRESHOLD_DAYS_RENEW_CERTIFICATE:
+        logger.info('Renew certificate.')
     else:
         logger.info('Certificate not yet due for renewal.')
         return
