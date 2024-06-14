@@ -23,7 +23,7 @@ class LineNotify:
 
     def send_message(self, message: str) -> None:
         payload = {
-            'message': message,
+            'message': f'\n{message}',
         }
         logger.info('Start to post LINE Notify.')
 

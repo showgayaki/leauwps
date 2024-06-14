@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Tuple
 from logging import config, getLogger
 
 from env import Env
@@ -17,7 +18,7 @@ logger = getLogger(__name__)
 env = Env()
 
 
-def check_valid_days(ssm: Ssm) -> int:
+def check_valid_days(ssm: Ssm) -> Tuple[int, str]:
     logger.info('Check valid days.')
 
     command = 'certbot certificates'
@@ -30,10 +31,11 @@ def check_valid_days(ssm: Ssm) -> int:
             # Expiry Date: 2024-**-** **:**:**+00:00 (VALID: ** days)
             if 'Expiry Date: ' in line:
                 valid_days = int(line.split(' ')[5])
-                logger.info(f'Valid [{valid_days}] days.')
+                valid_days_message = f'Valid {valid_days} days.'
+                logger.info(valid_days_message)
                 break
 
-    return valid_days
+    return valid_days, valid_days_message
 
 
 def commands() -> list:
@@ -72,14 +74,16 @@ def parse_output(command: str, output: str) -> str:
 
 def main() -> None:
     ssm = Ssm(env.EC2_INSTANCE_ID)
+    line = LineNotify(env.LINE_NOTIFY_ACCESS_TOKEN)
 
     # 更新できるのは、30日以内に期限切れになる証明書のみ
     THRESHOLD_DAYS_RENEW_CERTIFICATE = 30
-    valid_days = check_valid_days(ssm)
+    valid_days, valid_days_message = check_valid_days(ssm)
     if 0 < valid_days < THRESHOLD_DAYS_RENEW_CERTIFICATE:
         logger.info('Renew certificate.')
     else:
         logger.info('Certificate not yet due for renewal.')
+        line.send_message(f'{valid_days_message}\n{env.LETS_ENCRYPT_DOMAIN}の証明書更新は\nまだ必要ありません')
         return
 
     security_group = SecurityGroup(
@@ -93,10 +97,7 @@ def main() -> None:
     add_result = security_group.add_inbound_rule()
 
     if add_result:
-        message = '\n'
-        line = LineNotify(env.LINE_NOTIFY_ACCESS_TOKEN)
-        ssm = Ssm(env.EC2_INSTANCE_ID)
-
+        message = ''
         for command in commands():
             status, output = ssm.run_command(command)
             if status:
