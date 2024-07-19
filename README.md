@@ -51,3 +51,6 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 ```
+
+`sudo systemctl start leauwps.timer`  
+`sudo systemctl enable leauwps.timer`  
