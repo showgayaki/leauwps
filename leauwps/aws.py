@@ -106,12 +106,13 @@ class Ssm:
                 'output': [command output],
             }
         """
-        RETRY_COUNT = 5
+        COMMAND_RETRY_COUNT = 5
         WAITING_SECONDS = 5
-        logger.info(f'Start to run command[{command}].')
+        FETCH_RESULT_RETRY_COUNT = 60
 
-        for count in range(RETRY_COUNT):
-            logger.info(f'Command try count: {count + 1}/{RETRY_COUNT}')
+        logger.info(f'Start to run command[{command}].')
+        for count in range(COMMAND_RETRY_COUNT):
+            logger.info(f'Run Count: {count + 1}/{COMMAND_RETRY_COUNT}')
             try:
                 send_command_result = self.ssm.send_command(
                     InstanceIds=[self.instance_id],
@@ -125,10 +126,14 @@ class Ssm:
                 break
             except Exception as e:
                 logger.critical(e)
+                # 試行回数内でコマンド実行できなかったらここでリターン
+                if count + 1 == COMMAND_RETRY_COUNT:
+                    return 'Error', 'Failed'
 
         command_id = send_command_result['Command']['CommandId']
         logger.info(f'Start to fetch command[id: {command_id}] result.')
-        for _ in range(RETRY_COUNT * 2):
+        for count in range(FETCH_RESULT_RETRY_COUNT):
+            logger.info(f'Fetch Count: {count + 1}/{FETCH_RESULT_RETRY_COUNT}')
             try:
                 response = self.ssm.list_command_invocations(
                     CommandId=command_id,
@@ -144,6 +149,8 @@ class Ssm:
                     output = response['CommandInvocations'][0]['CommandPlugins'][0]['Output']
 
                     if status == 'Pending' or status == 'InProgress':
+                        logger.info(f'Command result status is [{status}]. Pause {WAITING_SECONDS} seconds...')
+                        time.sleep(WAITING_SECONDS)
                         continue
                     elif status == 'Success':
                         logger.info(f'{status}: Run [{command}]')

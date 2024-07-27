@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Tuple
 from logging import config, getLogger
 
 from env import Env
@@ -18,7 +17,7 @@ logger = getLogger(__name__)
 env = Env()
 
 
-def check_valid_days(ssm: Ssm) -> Tuple[int, str]:
+def check_valid_days(ssm: Ssm) -> tuple[int, str]:
     logger.info('Check valid days.')
 
     command = 'certbot certificates'
@@ -70,6 +69,8 @@ def parse_output(command: str, output: str) -> str:
         elif 'systemctl status dovecot' in command:
             if 'Active:' in line:
                 return f'\nDovecot Status\n{" ".join(line.split(" ")[:3])}'
+        else:
+            return f'{command}: {output}'
 
 
 def main() -> None:
@@ -100,9 +101,8 @@ def main() -> None:
         message = ''
         for command in commands():
             status, output = ssm.run_command(command)
-            if status:
-                if output:
-                    message += parse_output(command, output)
+            if status and output:
+                message += parse_output(command, output)
             else:
                 # statusが空のときは、コマンドの結果取得ができていない
                 message += f'コマンド：\n{command}\nの実行結果を取得できませんでした'
