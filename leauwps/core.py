@@ -48,29 +48,33 @@ def commands() -> list:
     ]
 
 
-def parse_output(command: str, output: str) -> str:
+def parse_output(status: str, command: str, output: str) -> str:
     for line in output.split('\n'):
         # 前後のスペースや改行などを削除
         line = line.strip()
 
-        # 各コマンドごとの処理
-        if 'certbot certonly --standalone' in command:
-            if 'Successfully received certificate.' in line:
-                return 'Let\'s Enctryptの更新に成功しました\n'
-        elif 'certbot certificates' in command:
-            # line: Expiry Date: 2024-**-** **:**:**+00:00 (VALID: ** days)
-            if 'Expiry Date: ' in line:
-                line_splited = line.split(' ')
-                return f'次の期限は\n{line_splited[2]} {line_splited[3]}です\n'
-        elif 'systemctl status postfix' in command:
-            # line: Active: active (running)
-            if 'Active:' in line:
-                return f'\nPostfix Status\n{" ".join(line.split(" ")[:3])}\n'
-        elif 'systemctl status dovecot' in command:
-            if 'Active:' in line:
-                return f'\nDovecot Status\n{" ".join(line.split(" ")[:3])}'
+        if status == 'Success':
+            # 各コマンドごとの処理
+            if 'certbot certonly --standalone' in command:
+                if 'Successfully received certificate.' in line:
+                    return 'Let\'s Enctryptの更新に成功しました\n'
+            elif 'certbot certificates' in command:
+                # line: Expiry Date: 2024-**-** **:**:**+00:00 (VALID: ** days)
+                if 'Expiry Date: ' in line:
+                    line_splited = line.split(' ')
+                    return f'次の期限は\n{line_splited[2]} {line_splited[3]}です\n'
+            elif 'systemctl restart' in command:
+                service_name = command.split(' ')[-1].capitalize()
+                return f'\n{service_name}の再起動に成功しました\n'
+            elif 'systemctl status' in command:
+                service_name = command.split(' ')[-1].capitalize()
+                # line: Active: active (running)
+                if 'Active:' in line:
+                    return f'\n{service_name} Status\n{" ".join(line.split(" ")[:3])}\n'
+            else:
+                return f'{command}: {output}'
         else:
-            return f'{command}: {output}'
+            return f'[{command}] result\n・Status: {status}\n・Output:\n{output}'
 
 
 def main() -> None:
@@ -101,8 +105,8 @@ def main() -> None:
         message = ''
         for command in commands():
             status, output = ssm.run_command(command)
-            if status and output:
-                message += parse_output(command, output)
+            if status:
+                message += parse_output(status, command, output)
             else:
                 # statusが空のときは、コマンドの結果取得ができていない
                 message += f'コマンド：\n{command}\nの実行結果を取得できませんでした'
