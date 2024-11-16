@@ -18,7 +18,7 @@ class Discord:
         # 連投するとアイコンなしになっちゃうので、ユーザー名を都度変えるために
         # ランダムな絵文字を前後に挿入しておく
         # これでユーザー名が被ることもほとんどないと思われ
-        emoji1, emoji2 = self.choice_emoji(2)
+        emoji1, emoji2 = self._choice_emoji(2)
         data = {
             'username': f'{emoji1}Leauwps{emoji2}',
             'content': content,
@@ -42,7 +42,7 @@ class Discord:
         except Exception as e:
             logger.critical(e)
 
-    def choice_emoji(self, number: int) -> list:
+    def _choice_emoji(self, number: int) -> list:
         emoji_list = [
             "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃",
             "🫠", "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "☺️",
