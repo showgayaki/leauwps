@@ -1,7 +1,7 @@
 from pathlib import Path
-import requests
 from logging import getLogger
-
+import random
+import requests
 
 logger = getLogger(__name__)
 
@@ -12,8 +12,15 @@ class Discord:
         logger.info(f'Discord Webhook URL: {self.webhuook_url}.')
 
     def post(self, content: str, files: list[Path] = []) -> None:
-        # https://discord.com/developers/docs/resources/webhook
+        '''
+        https://discord.com/developers/docs/resources/webhook
+        '''
+        # 連投するとアイコンなしになっちゃうので、ユーザー名を都度変えるために
+        # ランダムな絵文字を前後に挿入しておく
+        # これでユーザー名が被ることもほとんどないと思われ
+        emoji1, emoji2 = self.choice_emoji(2)
         data = {
+            'username': f'{emoji1}Leauwps{emoji2}',
             'content': content,
         }
 
@@ -34,3 +41,27 @@ class Discord:
             logger.info(f'Status Code: {response.status_code}')
         except Exception as e:
             logger.critical(e)
+
+    def choice_emoji(self, number: int) -> list:
+        emoji_list = [
+            "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃",
+            "🫠", "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "☺️",
+            "☺", "😚", "😙", "🥲", "😋", "😛", "😜", "🤪", "😝", "🤑",
+            "🤗", "🤭", "🫢", "🫣", "🤫", "🤔", "🫡", "🤐", "🤨", "😐",
+            "😑", "😶", "🫥", "😶‍🌫️", "😶‍🌫", "😏", "😒", "🙄", "😬", "😮‍💨",
+            "🤥", "🫨", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕",
+            "🤢", "🤮", "🤧", "🥵", "🥶", "🥴", "😵", "😵‍💫", "🤯", "🤠",
+            "🥳", "🥸", "😎", "🤓", "🧐", "😕", "🫤", "😟", "🙁", "☹️",
+            "☹", "😮", "😯", "😲", "😳", "🥺", "🥹", "😦", "😧", "😨",
+            "😰", "😥", "😢", "😭", "😱", "😖", "😣", "😞", "😓", "😩",
+            "😫", "🥱", "😤", "😡", "😠", "🤬", "😈", "👿", "💀", "☠️",
+            "☠", "💩", "🤡", "👹", "👺", "👻", "👽", "👾", "🤖", "😺",
+            "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🙈", "🙉",
+            "🙊", "💋", "💯", "💢", "💥", "💫", "💦", "💨", "🕳️", "🕳",
+            "💬", "👁️‍🗨️", "👁‍🗨️", "👁️‍🗨", "👁‍🗨", "🗨️", "🗨", "🗯️", "🗯", "💭",
+            "💤"
+        ]
+
+        choices = random.sample(emoji_list, number)
+        logger.info(f'Choiced emoji: {choices}')
+        return choices

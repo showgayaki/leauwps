@@ -14,5 +14,4 @@ class Env:
         self.EC2_INSTANCE_ID = os.getenv('EC2_INSTANCE_ID')
         self.LETS_ENCRYPT_DOMAIN = os.getenv('LETS_ENCRYPT_DOMAIN')
         self.LETS_ENCRYPT_MAIL = os.getenv('LETS_ENCRYPT_MAIL')
-        self.LINE_NOTIFY_ACCESS_TOKEN = os.getenv('LINE_NOTIFY_ACCESS_TOKEN')
         self.DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
