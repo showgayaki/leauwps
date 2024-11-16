@@ -25,15 +25,15 @@
     },
     "loggers": {
       "__main__": {
-        "level": "DEBUG",
+        "level": "INFO",
         "handlers": ["consoleHandler", "rotatingFileHandler"]
       },
       "aws": {
-        "level": "DEBUG",
+        "level": "INFO",
         "handlers": ["consoleHandler", "rotatingFileHandler"]
       },
-      "line": {
-        "level": "DEBUG",
+      "discord": {
+        "level": "INFO",
         "handlers": ["consoleHandler", "rotatingFileHandler"]
       }
     },

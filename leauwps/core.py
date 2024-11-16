@@ -4,7 +4,7 @@ from logging import config, getLogger
 
 from env import Env
 from aws import SecurityGroup, Ssm
-from line import LineNotify
+from discord import Discord
 
 
 # log設定の読み込み
@@ -79,7 +79,7 @@ def parse_output(status: str, command: str, output: str) -> str:
 
 def main() -> None:
     ssm = Ssm(env.EC2_INSTANCE_ID)
-    line = LineNotify(env.LINE_NOTIFY_ACCESS_TOKEN)
+    disco = Discord(env.DISCORD_WEBHOOK_URL)
 
     # 更新できるのは、30日以内に期限切れになる証明書のみ
     THRESHOLD_DAYS_RENEW_CERTIFICATE = 30
@@ -88,7 +88,7 @@ def main() -> None:
         logger.info('Renew certificate.')
     else:
         logger.info('Certificate not yet due for renewal.')
-        line.send_message(f'{valid_days_message}\n{env.LETS_ENCRYPT_DOMAIN}の証明書更新は\nまだ必要ありません')
+        disco.post(f'{valid_days_message}\n{env.LETS_ENCRYPT_DOMAIN}の証明書更新は\nまだ必要ありません')
         return
 
     security_group = SecurityGroup(
@@ -111,7 +111,7 @@ def main() -> None:
                 # statusが空のときは、コマンドの結果取得ができていない
                 message += f'コマンド：\n{command}\nの実行結果を取得できませんでした'
         # メッセージ送信
-        line.send_message(message)
+        disco.post(message)
     else:
         return
 
