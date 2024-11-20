@@ -1,6 +1,6 @@
 .DS_Store
 test_output/
-
+emoji.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

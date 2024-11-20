@@ -2,4 +2,4 @@
 cd `dirname $0`
 source .venv/bin/activate
 
-python leauwps/core.py
+python run.py

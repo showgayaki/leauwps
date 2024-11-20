@@ -15,3 +15,4 @@ class Env:
         self.LETS_ENCRYPT_DOMAIN = os.getenv('LETS_ENCRYPT_DOMAIN')
         self.LETS_ENCRYPT_MAIL = os.getenv('LETS_ENCRYPT_MAIL')
         self.DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+        self.EMOJI_API_URL = os.getenv('EMOJI_API_URL')

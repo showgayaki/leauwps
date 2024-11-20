@@ -1,20 +1,11 @@
-import json
-from pathlib import Path
-from logging import config, getLogger
+from logging import getLogger
 
-from env import Env
-from aws import SecurityGroup, Ssm
-from discord import Discord
+from leauwps import env
+from .aws import SecurityGroup, Ssm
+from .discord import Discord
 
-
-# log設定の読み込み
-current_dir = Path(__file__).parent.resolve()
-log_config = Path.joinpath(current_dir, 'log', 'config.json')
-with open(log_config) as f:
-    config.dictConfig(json.load(f))
 
 logger = getLogger(__name__)
-env = Env()
 
 
 def check_valid_days(ssm: Ssm) -> tuple[int, str]:
@@ -117,9 +108,3 @@ def main() -> None:
 
     # インバウンドルール削除
     security_group.delete_inbound_rule()
-
-
-if __name__ == '__main__':
-    logger.info('===== Leauwps started =====')
-    main()
-    logger.info('===== Leauwps end =====')
